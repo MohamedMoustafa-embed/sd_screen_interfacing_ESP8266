@@ -1,0 +1,38 @@
+Note this file data is so important any error will affect in performace and may get unexpected errors
+1.first row must be like this
+"
+CATEGORY,sill_number,frame_add_W,frame_div_W,frame_add_H,frame_div_H,sill_add_W,sill_div_W,sill_add_H,sill_div_H,net_add_W,net_div_W,net_add_H,net_div_H,clamp_add_W,clamp_div_W,clamp_add_H,clamp_div_H
+
+"
+2.CATEGORY is a sting
+sill_number  (only valid:postive integer numbers)(max 127)
+
+sill_add_H or sill_add_W
+rest of (add) data must be written in mm Unit calculations will depend on it (only valid: +/- integer numbers )(max 127)
+ex: frame_add_H = 0.5,-128,-0.25 xerror
+    must be : frame_add_H = 1,50,-1,-50 *note this in mm Unit
+
+sill_div_L or sill_div_W
+rest of (div) data must be written in mm Unit calculations will depend on it (only valid: postive integer numbers )(max 127)
+ex: frame_div_L = (0.5) Xerror , (-1) Xerror ,
+    must be : frame_add_H = 1,2,3,4,5
+
+
+    
+/**csv file header data>
+      *
+      *CATEGORY,      "string>s"
+      *sill_number,   "char>c"
+      "will note exceed "
+      "note write it in mm "
+      *sill_add_H,sill_div_L,sill_add_W,sill_div_W,   ""
+      *frame_add_H,frame_div_L,frame_add_W,frame_div_W,net_add_H,
+      *net_div_L,net_add_W,net_div_W,
+      *clamp_add_H,clamp_div_L,clamp_add_W,clamp_div_W
+*/
+
+
+folder will be set to 
+/ALUMINUM/
+
+/UPVC

@@ -10,10 +10,14 @@
  */
 #include <Arduino.h>
 #include "HardwareSerial.h"
-
+//#include <sdcard.h>
+#include "SD.h"
+//#include <mySD.h>
+#include <SPI.h>
+#include <CSV_Parser.h>
 
 #define checkAllKeyCodes    \
-  int key = 0;       \
+  int key = 0;              \
   key <= enums_max_counter; \
   key++ //for forloop to avoid long writing in fo loop
 
@@ -54,7 +58,6 @@ typedef struct
   void (*KeyCodeInst)(void); //executing intructions related to every code
 } Screen;
 
-
 int keycode_val = 0;
 int Keycode_addr = 0X0100;
 int keycode_inst = 0;
@@ -63,8 +66,82 @@ int data_in_val = 0;
 int data_in_addr = 0X0200;
 int data_in_inst = 0;
 
+/**csv file header data>
+      *CATEGORY,sill_number,frame_add_W,frame_div_W,frame_add_H,frame_div_H,sill_add_W,sill_div_W,sill_add_H,sill_div_H,net_add_W,net_div_W,net_add_H,net_div_H,clamp_add_W,clamp_div_W,clamp_add_H,clamp_div_H
+      *CATEGORY,      "string>s"
+      *sill_number,   "char>c"
+      "will note exceed "
+      "note write it in mm " max 127 mm
+      *sill_add_H, "int16_t>d"max +/- 32767 mm 
+      sill_div_L, "char>c"max127
+      sill_add_W, "int16_t>d"max +/- 32767 mm
+      sill_div_W,   "char>c"max127
+      format example "scdcdc"
+      *frame_add_H,frame_div_L,frame_add_W,frame_div_W,net_add_H,
+      *net_div_L,net_add_W,net_div_W,
+      *clamp_add_H,clamp_div_L,clamp_add_W,clamp_div_W
+*/
 
+/*
+  /format/
+ 		 Acceptable format types are:  
+			s - string  (C-like string, not a "String" Arduino object, just a char pointer, terminated by 0)   
+			f - float    
+			L - int32_t (32-bit signed value, can't be used for values over 2147483647)   
+			d - int16_t (16-bit signed value, can't be used for values over 32767)    
+			c - char    (8-bit signed value, can't be used for values over 127)   
+			x - hex     (stored as int32_t)   
+			"-" (dash character) means that value is unused/not-parsed (this way memory won't be allocated for values from that column)
+*/
+CSV_Parser company_file(/*format*/ "scdcdcdcdcdcdcdcdc", /*has_header*/ true, /*delimiter*/ ',');
 
+char **category; //string
+char *sill_number;
+
+int16_t *frame_add_W;
+char *frame_div_W;
+int16_t *frame_add_H;
+char *frame_div_H;
+
+int16_t *sill_add_W;
+char *sill_div_W;
+int16_t *sill_add_H;
+char *sill_div_H;
+
+int16_t *net_add_W;
+char *net_div_W;
+int16_t *net_add_H;
+char *net_div_H;
+
+int16_t *clamp_add_W;
+char *clamp_div_W;
+int16_t *clamp_add_H;
+char *clamp_div_H;
+/**
+ * char    **category   = (char**)cp["CATEGORY"];	//string
+char    *sill_number = (char*)cp["sill_number"];
+
+int16_t *frame_add_W = (int16_t*)cp["frame_add_W"];
+char    *frame_div_W = (char*)cp["frame_div_W"];
+int16_t *frame_add_H = (int16_t*)cp["frame_add_H"];
+char    *frame_div_H = (char*)cp["frame_div_H"];
+
+int16_t *sill_add_W = (int16_t*)cp["sill_add_W"];
+char    *sill_div_W = (char*)cp["sill_div_W"];
+int16_t *sill_add_H = (int16_t*)cp["sill_add_H"];
+char    *sill_div_H = (char*)cp["sill_div_H"];
+
+int16_t *net_add_W = (int16_t*)cp["net_add_W"];
+char    *net_div_W = (char*)cp["net_div_W"];
+int16_t *net_add_H = (int16_t*)cp["net_add_H"];
+char    *net_div_H = (char*)cp["net_div_H"];
+
+int16_t *clamp_add_W = (int16_t*)cp["clamp_add_W"];
+char    *clamp_div_W = (char*)cp["clamp_div_W"];
+int16_t *clamp_add_H = (int16_t*)cp["clamp_add_H"];
+char    *clamp_div_H = (char*)cp["clamp_div_H"];
+ * 
+ */
 #if 0
 HardwareSerial Debug_Serial(0);
 HardwareSerial screen_serial(2) ;
@@ -78,5 +155,3 @@ void extern DGUS_Beep(byte bTime);
 void extern DGUS_Go_to_Picture(byte picID);
 void extern DGUS_SendVal(int Address, int Value);
 #endif
-
-

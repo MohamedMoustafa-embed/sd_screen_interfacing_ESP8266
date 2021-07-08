@@ -1,0 +1,37 @@
+
+#Screen squence:
+choose company then choose type (جرار ولا مفصلى)
+every company has a uniqe code saved in struct and excel sheet **could be used as numbers to be customized
+this code change in folder name in program which will be opened
+(جرار ولا مفصلى )will concatinated its name to file variable (company + type)
+
+
+#Screen pages enum:
+-pagename_keycode action == keycode
+
+
+#Screen pages struct:
+every page has 
+.VP touchale areas addresses(VP) variable pointer"assigned in DWIN software"
+    returned keycode will be stored there
+.return keycode "indicate page position and instuction"
+.instruction "pointer to function"
+
+#Screen pages variables:
+-Keycode_addr returned code address. ex:0x0001 "when ask to read the last returned keycode sent by screen which indcate with area pressed "
+-keycode_val  returned code value. ex: returned keycode 0x5512, picture position is 55 and its name 55, instruction number 12 will be executed
+-keycode_inst returned code instruction
+
+#navigation function 
+
+
+#SD card folders structure :
+every company has a folder with its name every folder contains 2 files for type (its name must be like it)"compannName_Type"
+will be searched in main program
+
+
+Resources:
+https://docs.platformio.org/en/latest/boards/espressif32/esp32dev.html
+https://docs.platformio.org/en/latest/librarymanager/index.html
+https://stackoverflow.com/questions/1662719/looping-through-enum-values
+https://stackoverflow.com/questions/27191638/typedef-ns-enum-vs-typedef-enum
