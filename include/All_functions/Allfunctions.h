@@ -36,39 +36,59 @@ typedef enum
   material_Alum = 0x0500,
   material_UPVC = 0x0501,
 
-  AlumCompanies_1 = 0x0601,
+  AlumCompanies_1 = 0x0601,//determine folder name ex:ALUMINUM
   AlumCompanies_2,
   AlumCompanies_3,
   AlumCompanies_4,
   AlumCompanies_5,
   AlumCompanies_6,
 
-  UPVCCompanies_1 = 0x0701,
+  UPVCCompanies_1 = 0x0701,//determine file name ex:ALUMINUM/JOINT/01_VALVE.csv
   UPVCCompanies_2,
   UPVCCompanies_3,
   UPVCCompanies_4,
   UPVCCompanies_5,
   UPVCCompanies_6,
 
+  SectionType_joint = 0x0801,//determine subfolder name ex:ALUMINUM/JOINT
+  sectionType_sliding,
+
+  ListPage_row1 = 0x0901,
+  ListPage_row2,
+  ListPage_row3,
+  ListPage_row4,
+
+
+
   enums_max_counter //used to stop iteration
+
 } pagename_keycodeActionName;
+
+
 typedef struct
 {
   pagename_keycodeActionName ActionName;
   void (*KeyCodeInst)(void); //executing intructions related to every code
 } Screen;
 
-int keycode_val = 0;
-int Keycode_addr = 0X0100;
-int keycode_inst = 0;
 
-int data_in_val = 0;
-int data_in_addr = 0X0200;
-int data_in_inst = 0;
+
+int keycode_value = 0;
+int Keycode_address = 0X0100;
+int keycode_instruction = 0;
+
+//data may be outerlenght or W,L array of "operation list"
+int outer_lenght_val = 0;
+int outer_lenght_addr = 0X0200;
+int outer_lenght_inst = 0;
+
+
+
+
 
 /**csv file header data>
-      *CATEGORY,sill_number,frame_add_W,frame_div_W,frame_add_H,frame_div_H,sill_add_W,sill_div_W,sill_add_H,sill_div_H,net_add_W,net_div_W,net_add_H,net_div_H,clamp_add_W,clamp_div_W,clamp_add_H,clamp_div_H
-      *CATEGORY,      "string>s"
+      *section_name,sill_number,frame_add_W,frame_div_W,frame_add_H,frame_div_H,sill_add_W,sill_div_W,sill_add_H,sill_div_H,net_add_W,net_div_W,net_add_H,net_div_H,clamp_add_W,clamp_div_W,clamp_add_H,clamp_div_H
+      *section_name,      "string>s"
       *sill_number,   "char>c"
       "will note exceed "
       "note write it in mm " max 127 mm
@@ -95,7 +115,7 @@ int data_in_inst = 0;
 */
 CSV_Parser company_file(/*format*/ "scdcdcdcdcdcdcdcdc", /*has_header*/ true, /*delimiter*/ ',');
 
-char **category; //string
+char **section_name; //string
 char *sill_number;
 
 int16_t *frame_add_W;
@@ -118,7 +138,7 @@ char *clamp_div_W;
 int16_t *clamp_add_H;
 char *clamp_div_H;
 /**
- * char    **category   = (char**)cp["CATEGORY"];	//string
+ * char    **section_name   = (char**)cp["section_name"];	//string
 char    *sill_number = (char*)cp["sill_number"];
 
 int16_t *frame_add_W = (int16_t*)cp["frame_add_W"];

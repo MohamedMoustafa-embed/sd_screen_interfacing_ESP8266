@@ -1,4 +1,4 @@
-﻿CATEGORY,sill_number,sill_add_L,sill_div_L,sill_add_W,sill_div_W,frame_add_L,frame_div_L,frame_add_W,frame_div_W,net_add_L,net_div_L,net_add_W,net_div_W,clamp_add_L,clamp_div_L,clamp_add_W,clamp_div_W
+﻿section_name,sill_number,sill_add_L,sill_div_L,sill_add_W,sill_div_W,frame_add_L,frame_div_L,frame_add_W,frame_div_W,net_add_L,net_div_L,net_add_W,net_div_W,clamp_add_L,clamp_div_L,clamp_add_W,clamp_div_W
 PS6600,2,0,2,0,2,0,1,0,1,,,,,,,,
 PS6600,4,,,0,1,,,,,,,,,,,,
 PS9600,2,-9.4,,0,2,,,,,,,,,,,,

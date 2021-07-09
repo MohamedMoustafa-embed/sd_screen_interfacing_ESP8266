@@ -1,10 +1,10 @@
 Note this file data is so important any error will affect in performace and may get unexpected errors
 1.first row must be like this
 "
-CATEGORY,sill_number,frame_add_W,frame_div_W,frame_add_H,frame_div_H,sill_add_W,sill_div_W,sill_add_H,sill_div_H,net_add_W,net_div_W,net_add_H,net_div_H,clamp_add_W,clamp_div_W,clamp_add_H,clamp_div_H
+section_name,sill_number,frame_add_W,frame_div_W,frame_add_H,frame_div_H,sill_add_W,sill_div_W,sill_add_H,sill_div_H,net_add_W,net_div_W,net_add_H,net_div_H,clamp_add_W,clamp_div_W,clamp_add_H,clamp_div_H
 
 "
-2.CATEGORY is a sting
+2.section_name is a sting
 sill_number  (only valid:postive integer numbers)(max 127)
 
 sill_add_H or sill_add_W
@@ -21,7 +21,7 @@ ex: frame_div_L = (0.5) Xerror , (-1) Xerror ,
     
 /**csv file header data>
       *
-      *CATEGORY,      "string>s"
+      *section_name,      "string>s"
       *sill_number,   "char>c"
       "will note exceed "
       "note write it in mm "

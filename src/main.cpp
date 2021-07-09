@@ -40,35 +40,32 @@
 
 #define ESP8266 //ESP32 or ESP8266
 
-
 #ifdef ESP8266
-SoftwareSerial Serial2 (D0,D1);//Rx,Tx
+SoftwareSerial Serial2(D0, D1); //Rx,Tx
 //For SD Card
-#define SCK  14
-#define MISO 12
-#define MOSI 13
-#define SS  15
+#define SCK D5 //14
+#define MISO D6 //12
+#define MOSI D7 //13
+#define SS D8 //15
+#define CS D4 //17
 #endif
 
 #ifdef ESP32
-SoftwareSerial Serial2 (D0,D1);//Rx,Tx
+SoftwareSerial Serial2(D0, D1); //Rx,Tx
 //For SD Card
-#define SCK  14
+#define SCK 14
 #define MISO 12
 #define MOSI 13
-#define SS  15
+#define SS 15
 #endif
-
 
 #define Serial_Debuging
 
 #define _StartComm_Hbyte 0x5A
 #define _StartComm_Lbyte 0xA5
 
-
 //Hardware pins
-const int chipSelect = 10;//for sd card ss
-
+const int chipSelect = 10; //for sd card ss
 
 void Serial_init(void);
 void TouchScreenEvent();
@@ -85,50 +82,66 @@ void print1(void) { return; }
 Screen Screen_codes[] =
     {
         {lang_Eng, print1},
-};
 
-String companyName = "Alumil";
-String sectionType_joint = "joint";
-char* sectionType_sliding = "sliding";
+        {
+            material_Alum,
+        },
+        {
+            material_UPVC,
+        },
+};
+char *creatfile_PATH(char *material,
+                     char *section,
+                     char *company);
 
 void setup()
 {
   Serial_init();
-  SPI.pins(SCK,MISO,MOSI,SS);
+  SPI.pins(SCK, MISO, MOSI, SS);
   delay(5000);
 #ifdef Serial_Debuging
   Serial.print("Initializing SD card...");
 #endif
   // see if the card is present and can be initialized:
-  if (!SD.begin(chipSelect)) {
-    #ifdef Serial_Debuging
+  if (!SD.begin(CS))
+  {
+#ifdef Serial_Debuging
     Serial.println("Card failed, or not present");
-    #endif
-    while (1); // don't do anything more:
+#endif
+    //while (1)
+      ; // don't do anything more:
   }
-  #ifdef Serial_Debuging
+#ifdef Serial_Debuging
   Serial.println("card initialized.");
 #endif
+char const *printedPATH = creatfile_PATH("mohame","moustafa","aly");
 
+Serial.print("PATH");
+Serial.println(printedPATH);
 
+/*
+  int company_rows = company_file.getRowsCount();
 
-int company_rows =company_file.getRowsCount();									
-
-  if (category && sill_number) {
-    for(int row = 0; row < company_file.getRowsCount(); row++) {
+  if (section_name && sill_number)
+  {
+    for (int row = 0; row < company_file.getRowsCount(); row++)
+    {
       Serial.print("row = ");
       Serial.print(row, DEC);
       Serial.print(", column_1 = ");
-      Serial.print(category[row]);
+      Serial.print(section_name[row]);
       Serial.print(", column_2 = ");
       Serial.println(sill_number[row], DEC);
     }
-  } else {
+  }
+  else
+  {
     Serial.println("At least 1 of the columns was not found, something went wrong.");
   }
 
   // output parsed values (allows to check that the file was parsed correctly)
   company_file.print(); // assumes that "Serial.begin()" was called before (otherwise it won't work)
+  */
 }
 
 void loop()
@@ -146,10 +159,35 @@ void Serial_init(void)
   //screen_serial.begin(115200,0x800001c,16,17);//serial2
 }
 
-void getCompany_param (char *companyName_type){//save company parameter in global variables
-  company_file.readSDfile(companyName_type);             // this wouldn't work if SD.begin wasn't called before
+char *creatfile_PATH(char  *material,
+                     char *section,
+                     char *company)
+{
+  
+  const char* dir_operator = "/";
+  const char* extention = ".csv";
+  char  CreatedPath[((strlen(material) + strlen(section) + strlen(company)) * sizeof(char))];
+  strcpy(CreatedPath, dir_operator);
+  strcat(CreatedPath, material);
+  strcat(CreatedPath, dir_operator);
+  strcat(CreatedPath, section);
+  strcat(CreatedPath, dir_operator);
+  strcat(CreatedPath, company);
+  strcat(CreatedPath, extention);
+  return CreatedPath;
+};
+void getCompany_param(char *material,
+                      char *section,
+                      char *company)
+{ //save company parameter in global variables
+  char *companyPATH = creatfile_PATH(material,
+                                     section,
+                                     company);
+ 
+  company_file.readSDfile(companyPATH); // this wouldn't work if SD.begin wasn't called before
+  
   //store in those arrays
-  category = (char **)company_file["CATEGORY"]; //string
+  section_name = (char **)company_file["section_name"]; //string
   char *sill_number = (char *)company_file["sill_number"];
 
   frame_add_W = (int16_t *)company_file["frame_add_W"];
@@ -172,7 +210,7 @@ void getCompany_param (char *companyName_type){//save company parameter in globa
   clamp_add_H = (int16_t *)company_file["clamp_add_H"];
   clamp_div_H = (char *)company_file["clamp_div_H"];
 
-}//
+} //
 void DGUS_LED_Bright(byte bVal) //Screen backlite set 0-0x40
 {
   if (bVal > 0x40)
@@ -253,13 +291,13 @@ void TouchScreenEvent()
         switch (iCmd)
         {
         case 0x83:
-          if (iAdr == Keycode_addr)
+          if (iAdr == Keycode_address)
           {
             iVal = (iData[3] << 8) + iData[4];
-            keycode_val = iVal;
+            keycode_value = iVal;
             for (checkAllKeyCodes) //call the function of returned keycode
             {
-              if (keycode_val == Screen_codes[key].ActionName)
+              if (keycode_value == Screen_codes[key].ActionName)
               {
                 Screen_codes[key].KeyCodeInst();
                 return;
