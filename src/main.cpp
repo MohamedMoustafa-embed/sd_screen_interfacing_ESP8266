@@ -43,11 +43,11 @@
 #ifdef ESP8266
 SoftwareSerial Serial2(D0, D1); //Rx,Tx
 //For SD Card
-#define SCK D5 //14
+#define SCK D5  //14
 #define MISO D6 //12
 #define MOSI D7 //13
-#define SS D8 //15
-#define CS D4 //17
+#define SS D8   //15
+#define CS D4   //17
 #endif
 
 #ifdef ESP32
@@ -64,8 +64,35 @@ SoftwareSerial Serial2(D0, D1); //Rx,Tx
 #define _StartComm_Hbyte 0x5A
 #define _StartComm_Lbyte 0xA5
 
-//Hardware pins
-const int chipSelect = 10; //for sd card ss
+
+
+
+char **section_name; //string
+char *sill_number;
+
+int16_t *frame_add_W;
+char *frame_div_W;
+int16_t *frame_add_H;
+char *frame_div_H;
+
+int16_t *sill_add_W;
+char *sill_div_W;
+int16_t *sill_add_H;
+char *sill_div_H;
+
+int16_t *net_add_W;
+char *net_div_W;
+int16_t *net_add_H;
+char *net_div_H;
+
+int16_t *clamp_add_W;
+char *clamp_div_W;
+int16_t *clamp_add_H;
+char *clamp_div_H;
+
+
+
+
 
 void Serial_init(void);
 void TouchScreenEvent();
@@ -90,10 +117,18 @@ Screen Screen_codes[] =
             material_UPVC,
         },
 };
+/*
 char *creatfile_PATH(char *material,
                      char *section,
                      char *company);
+*/
+String creatfile_PATH(String material,
+                      String section,
+                      String company);
 
+void getCompany_param(String material,
+                      String section,
+                      String company);
 void setup()
 {
   Serial_init();
@@ -108,47 +143,24 @@ void setup()
 #ifdef Serial_Debuging
     Serial.println("Card failed, or not present");
 #endif
-    //while (1)
-      ; // don't do anything more:
+  
   }
 #ifdef Serial_Debuging
   Serial.println("card initialized.");
 #endif
-char const *printedPATH = creatfile_PATH("mohame","moustafa","aly");
 
-Serial.print("PATH");
-Serial.println(printedPATH);
-
-/*
-  int company_rows = company_file.getRowsCount();
-
-  if (section_name && sill_number)
-  {
-    for (int row = 0; row < company_file.getRowsCount(); row++)
-    {
-      Serial.print("row = ");
-      Serial.print(row, DEC);
-      Serial.print(", column_1 = ");
-      Serial.print(section_name[row]);
-      Serial.print(", column_2 = ");
-      Serial.println(sill_number[row], DEC);
-    }
-  }
-  else
-  {
-    Serial.println("At least 1 of the columns was not found, something went wrong.");
-  }
-
-  // output parsed values (allows to check that the file was parsed correctly)
-  company_file.print(); // assumes that "Serial.begin()" was called before (otherwise it won't work)
-  */
+  getCompany_param("ALUMINUM","joint","01_test");
+  Serial.print("DATA:");
+  Serial.println(sill_number[1],DEC);
 }
 
 void loop()
 {
-
-  TouchScreenEvent(); //read sent packed and analysis it (keycode found go to relaed function)(changeglobal "keycode_val" var)
+  //TouchScreenEvent(); //read sent packed and analysis it (keycode found go to relaed function)(changeglobal "keycode_val" var)
 }
+
+
+
 
 void Serial_init(void)
 {
@@ -159,11 +171,9 @@ void Serial_init(void)
   //screen_serial.begin(115200,0x800001c,16,17);//serial2
 }
 
-char *creatfile_PATH(char  *material,
-                     char *section,
-                     char *company)
+String creatfile_PATH(String material,String section,String company)
 {
-  
+#if 0
   const char* dir_operator = "/";
   const char* extention = ".csv";
   char  CreatedPath[((strlen(material) + strlen(section) + strlen(company)) * sizeof(char))];
@@ -174,21 +184,25 @@ char *creatfile_PATH(char  *material,
   strcat(CreatedPath, dir_operator);
   strcat(CreatedPath, company);
   strcat(CreatedPath, extention);
-  return CreatedPath;
+#endif
+
+  String CreatedPath_S = "/" + material + "/" + section + "/" + company + ".csv";
+
+  return CreatedPath_S;
 };
-void getCompany_param(char *material,
-                      char *section,
-                      char *company)
+
+void getCompany_param(String material,String section,String company)
 { //save company parameter in global variables
-  char *companyPATH = creatfile_PATH(material,
-                                     section,
-                                     company);
- 
+  String companyPATH_S = creatfile_PATH(material,section,company);
+  char companyPATH[50];
+  companyPATH_S.toCharArray(companyPATH, 50);
+
+  CSV_Parser company_file(/*format*/ "scdcdcdcdcdcdcdcdc", /*has_header*/ true, /*delimiter*/ ',');
   company_file.readSDfile(companyPATH); // this wouldn't work if SD.begin wasn't called before
-  
+
   //store in those arrays
   section_name = (char **)company_file["section_name"]; //string
-  char *sill_number = (char *)company_file["sill_number"];
+  sill_number = (char *)company_file["sill_number"];
 
   frame_add_W = (int16_t *)company_file["frame_add_W"];
   frame_div_W = (char *)company_file["frame_div_W"];
@@ -209,8 +223,11 @@ void getCompany_param(char *material,
   clamp_div_W = (char *)company_file["clamp_div_W"];
   clamp_add_H = (int16_t *)company_file["clamp_add_H"];
   clamp_div_H = (char *)company_file["clamp_div_H"];
+  #ifdef Serial_Debuging
+  company_file.print();
+  #endif
+} 
 
-} //
 void DGUS_LED_Bright(byte bVal) //Screen backlite set 0-0x40
 {
   if (bVal > 0x40)
@@ -222,6 +239,7 @@ void DGUS_LED_Bright(byte bVal) //Screen backlite set 0-0x40
   Serial2.write(0x01);
   Serial2.write(bVal);
 }
+
 void DGUS_Beep(byte bTime) // Beep generate bTime*10ms
 {
   Serial2.write(_StartComm_Hbyte);
@@ -231,6 +249,8 @@ void DGUS_Beep(byte bTime) // Beep generate bTime*10ms
   Serial2.write(0x02);
   Serial2.write(bTime);
 }
+
+
 void DGUS_Go_to_Picture(byte picID) // Display specific picture
 {
   Serial2.write(_StartComm_Hbyte);
@@ -240,6 +260,7 @@ void DGUS_Go_to_Picture(byte picID) // Display specific picture
   Serial2.write(0x03);
   Serial2.write(picID);
 }
+
 /*
 byte picID DGUS_get_current_picID(void) // Know current picture ID 
 { 
@@ -251,6 +272,7 @@ byte picID DGUS_get_current_picID(void) // Know current picture ID
   Serial2.write(picID);
 }
 */
+
 void DGUS_SendVal(int Address, int Value) //Send Value for VP= Address to DGUS
 {
   byte bAdrL, bAdrH, bValL, bValH;
@@ -268,6 +290,7 @@ void DGUS_SendVal(int Address, int Value) //Send Value for VP= Address to DGUS
   Serial2.write(bValH);
   Serial2.write(bValL);
 }
+
 void TouchScreenEvent()
 {
   int iLenght;

@@ -113,30 +113,31 @@ int outer_lenght_inst = 0;
 			x - hex     (stored as int32_t)   
 			"-" (dash character) means that value is unused/not-parsed (this way memory won't be allocated for values from that column)
 */
-CSV_Parser company_file(/*format*/ "scdcdcdcdcdcdcdcdc", /*has_header*/ true, /*delimiter*/ ',');
 
-char **section_name; //string
-char *sill_number;
 
-int16_t *frame_add_W;
-char *frame_div_W;
-int16_t *frame_add_H;
-char *frame_div_H;
+extern char **section_name; //string
+extern char *sill_number;
 
-int16_t *sill_add_W;
-char *sill_div_W;
-int16_t *sill_add_H;
-char *sill_div_H;
+extern int16_t *frame_add_W;
+extern char *frame_div_W;
+extern int16_t *frame_add_H;
+extern char *frame_div_H;
 
-int16_t *net_add_W;
-char *net_div_W;
-int16_t *net_add_H;
-char *net_div_H;
+extern int16_t *sill_add_W;
+extern char *sill_div_W;
+extern int16_t *sill_add_H;
+extern char *sill_div_H;
 
-int16_t *clamp_add_W;
-char *clamp_div_W;
-int16_t *clamp_add_H;
-char *clamp_div_H;
+extern int16_t *net_add_W;
+extern char *net_div_W;
+extern int16_t *net_add_H;
+extern char *net_div_H;
+
+extern int16_t *clamp_add_W;
+extern char *clamp_div_W;
+extern int16_t *clamp_add_H;
+extern char *clamp_div_H;
+
 /**
  * char    **section_name   = (char**)cp["section_name"];	//string
 char    *sill_number = (char*)cp["sill_number"];
