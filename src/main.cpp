@@ -38,7 +38,7 @@
 
 #include <SoftwareSerial.h>
 
-#define ESP8266 //ESP32 or ESP8266
+//#define ESP8266 //ESP32 or ESP8266
 
 #ifdef ESP8266
 SoftwareSerial Serial2(D0, D1); //Rx,Tx
@@ -59,13 +59,18 @@ SoftwareSerial Serial2(D0, D1); //Rx,Tx
 #define SS 15
 #endif
 
+
+#define sections_list_rows 3 //table rows in scren to display sections related to every companty and to choose on
+#define section_list_pages 3
+#define section_list_colums 2
+
+#define cutting_ist_rows 3
+
+
 #define Serial_Debuging
 
 #define _StartComm_Hbyte 0x5A
 #define _StartComm_Lbyte 0xA5
-
-
-
 
 char **section_name; //string
 char *sill_number;
@@ -90,16 +95,14 @@ char *clamp_div_W;
 int16_t *clamp_add_H;
 char *clamp_div_H;
 
-
-
-
-
 void Serial_init(void);
 void TouchScreenEvent();
 void DGUS_LED_Bright(byte bVal);
 void DGUS_Beep(byte bTime);
 void DGUS_Go_to_Picture(byte picID);
 void DGUS_SendVal(int Address, int Value);
+void DGUS_SendSrting(int Address , String text);
+void display_Section_list (int start_page, int Start_addr );
 
 //functions declarations
 void print1(void);
@@ -117,18 +120,11 @@ Screen Screen_codes[] =
             material_UPVC,
         },
 };
-/*
-char *creatfile_PATH(char *material,
-                     char *section,
-                     char *company);
-*/
-String creatfile_PATH(String material,
-                      String section,
-                      String company);
 
-void getCompany_param(String material,
-                      String section,
-                      String company);
+String creatfile_PATH(String material, String section, String company);
+
+void getCompany_param(String material, String section, String company);
+
 void setup()
 {
   Serial_init();
@@ -141,17 +137,24 @@ void setup()
   if (!SD.begin(CS))
   {
 #ifdef Serial_Debuging
-    Serial.println("Card failed, or not present");
+  Serial.println("Card failed, or not present");
 #endif
-  
   }
 #ifdef Serial_Debuging
   Serial.println("card initialized.");
 #endif
 
-  getCompany_param("ALUMINUM","joint","01_test");
+  getCompany_param("ALUMINUM", "joint", "01_test");
   Serial.print("DATA:");
-  Serial.println(sill_number[1],DEC);
+  Serial.println(sill_number[1], DEC);
+  section_width_val = 0x003F;
+  section_inner_val = 999;
+  DGUS_SendVal(section_width_addr,1);
+  DGUS_SendSrting(1000,"mohamed");
+  DGUS_SendSrting(1200,"mohamed");
+  DGUS_SendSrting(1211,"mohamed");
+  DGUS_SendSrting(1222,"mohamed");
+  
 }
 
 void loop()
@@ -159,19 +162,15 @@ void loop()
   //TouchScreenEvent(); //read sent packed and analysis it (keycode found go to relaed function)(changeglobal "keycode_val" var)
 }
 
-
-
-
 void Serial_init(void)
 {
 #ifdef Serial_Debuging
   Serial.begin(9600); //for serial debug
 #endif
-  Serial2.begin(115200); //for touch screen (RX2,TX2)(16,17)
-  //screen_serial.begin(115200,0x800001c,16,17);//serial2
+  Serial2.begin(115200); //esp32 serial2 pins (RX2,TX2)(16,17)
 }
 
-String creatfile_PATH(String material,String section,String company)
+String creatfile_PATH(String material, String section, String company)
 {
 #if 0
   const char* dir_operator = "/";
@@ -191,9 +190,9 @@ String creatfile_PATH(String material,String section,String company)
   return CreatedPath_S;
 };
 
-void getCompany_param(String material,String section,String company)
+void getCompany_param(String material, String section, String company)
 { //save company parameter in global variables
-  String companyPATH_S = creatfile_PATH(material,section,company);
+  String companyPATH_S = creatfile_PATH(material, section, company);
   char companyPATH[50];
   companyPATH_S.toCharArray(companyPATH, 50);
 
@@ -223,10 +222,10 @@ void getCompany_param(String material,String section,String company)
   clamp_div_W = (char *)company_file["clamp_div_W"];
   clamp_add_H = (int16_t *)company_file["clamp_add_H"];
   clamp_div_H = (char *)company_file["clamp_div_H"];
-  #ifdef Serial_Debuging
+#ifdef Serial_Debuging
   company_file.print();
-  #endif
-} 
+#endif
+}
 
 void DGUS_LED_Bright(byte bVal) //Screen backlite set 0-0x40
 {
@@ -249,7 +248,6 @@ void DGUS_Beep(byte bTime) // Beep generate bTime*10ms
   Serial2.write(0x02);
   Serial2.write(bTime);
 }
-
 
 void DGUS_Go_to_Picture(byte picID) // Display specific picture
 {
@@ -275,20 +273,36 @@ byte picID DGUS_get_current_picID(void) // Know current picture ID
 
 void DGUS_SendVal(int Address, int Value) //Send Value for VP= Address to DGUS
 {
+  //its defined in screen software that number consist of (3 int numbers + 1 decimal number ex: 999.9 ,screen need to recieve it as 9999 and it will divide it)
   byte bAdrL, bAdrH, bValL, bValH;
   bAdrL = Address & 0xFF;
   bAdrH = (Address >> 8) & 0xFF;
-  bValL = Value & 0xFF;
-  bValH = (Value >> 8) & 0xFF;
+  Value*=10;//for shifting decimal operator 
+  bValL = (int)Value & 0xFF;
+  bValH = ((int)Value >> 8) & 0xFF;
 
-  Serial2.write(0x5A);
-  Serial2.write(0xA5);
-  Serial2.write(0x05);
-  Serial2.write(0x82);
+  Serial2.write(_StartComm_Hbyte);
+  Serial2.write(_StartComm_Lbyte);
+  Serial2.write(0x05);//number of next bytes
+  Serial2.write(0x82);//write command
   Serial2.write(bAdrH);
   Serial2.write(bAdrL);
   Serial2.write(bValH);
   Serial2.write(bValL);
+}
+
+void DGUS_SendSrting(int Address , String text){
+
+  byte bAdrL, bAdrH;
+  bAdrL = Address & 0xFF;
+  bAdrH = (Address >> 8) & 0xFF;
+  Serial2.write(_StartComm_Hbyte);
+  Serial2.write(_StartComm_Lbyte);
+  Serial2.write(((byte)text.length()&0xFF));//number of next bytes
+  Serial2.write(0x82);//write command
+  Serial2.write(bAdrH);
+  Serial2.write(bAdrL);
+  Serial2.print(text);
 }
 
 void TouchScreenEvent()
@@ -298,6 +312,7 @@ void TouchScreenEvent()
   int iAdr = 0, iVal = 0;
   if (Serial2.available() > 3)
   {
+    Serial.println("start");
     if (Serial2.read() == _StartComm_Hbyte)
       if (Serial2.read() == _StartComm_Lbyte)
       {
@@ -327,6 +342,14 @@ void TouchScreenEvent()
               }
             }
           }
+          else if (iAdr == section_outer_lenght_addr)
+          {
+            iVal = (iData[3] << 8) + iData[4];
+            section_outer_lenght_val = iVal;
+#ifdef Serial_Debuging
+            Serial.println(section_outer_lenght_val, DEC); //for serial debug
+#endif
+          }
           break;
 
         default:
@@ -339,10 +362,29 @@ void TouchScreenEvent()
     Serial.print("VP:");
     Serial.println(iAdr);
     Serial.print("Value:");
-    Serial.println(iVal);
+    Serial.println(iVal,DEC);
 #endif
   }
 }
+
+
+
+
+
+void display_Section_list (int start_page, int Start_addr ){
+    for (int i = ((sections_list_rows*start_page)-sections_list_rows) ;i<= ((start_page*sections_list_rows)-1); i++){
+      //get data to display from global array
+      DGUS_SendSrting(Start_addr,section_name[i]);
+      DGUS_SendVal(Start_addr+1,sill_number[i]);
+      Start_addr+=10;
+    }
+}
+
+void Cutting_list_Handling (){
+
+}
+
+void fillin_list_data (char* col1_arr,char* col2_arr,int rows_no,int pages_n ){}
 
 /**
  * Errors

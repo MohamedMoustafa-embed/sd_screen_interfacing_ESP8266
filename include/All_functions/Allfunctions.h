@@ -74,13 +74,20 @@ typedef struct
 
 
 int keycode_value = 0;
-int Keycode_address = 0X0100;
+const int Keycode_address = 0X0200;
 int keycode_instruction = 0;
 
 //data may be outerlenght or W,L array of "operation list"
-int outer_lenght_val = 0;
-int outer_lenght_addr = 0X0200;
-int outer_lenght_inst = 0;
+float section_outer_lenght_val = 0;
+const int section_outer_lenght_addr = 0X0400;
+int section_outer_lenght_inst = 0;
+
+float section_width_val = 0;
+const int section_width_addr = 0x0500;
+
+float section_inner_val = 0;
+const int section_inner_addr = 0x0300;
+
 
 
 
