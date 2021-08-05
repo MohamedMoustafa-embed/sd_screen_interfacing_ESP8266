@@ -28,36 +28,26 @@ typedef enum
   lang_Arb,
 
   main_Back = 0x0700,
-  main_Deduction,
-  main_Directcut,
-  main_WirelessControl,
   main_settings,
-
-  material_Alum = 0x1100,
-  material_UPVC ,
-
-  sectionType_Hinged = 0x1500,
+  main_Deduction,
+  main_WirelessControl,
+  main_Directcut,
+  
+  sectionType_Hinged = 0x0900,
   sectionType_Sliding,
 
-  AlumCompanies_1 = 0x0601,//determine folder name ex:ALUMINUM
-  AlumCompanies_2,
-  AlumCompanies_3,
-  AlumCompanies_4,
-  AlumCompanies_5,
-  AlumCompanies_6,
+  material_UPVC = 0x1000,
+  material_Alum ,
+  
+  CompanyList_1 = 0x1200,
+  CompanyList_2 ,
+  CompanyList_3 ,
+  CompanyList_4 ,
+  CompanyList_5 ,
+  CompanyList_6 ,
 
-  UPVCCompanies_1 = 0x0701,//determine file name ex:ALUMINUM/JOINT/01_VALVE.csv
-  UPVCCompanies_2,
-  UPVCCompanies_3,
-  UPVCCompanies_4,
-  UPVCCompanies_5,
-  UPVCCompanies_6,
-
-  DispCateg_Row1 = 0x0901,
-  DispCateg_Row2,
-  DispCateg_Row3,
-  DispCateg_Row4,
-  DispCateg_Row5,
+  DispCateg_chooseRow = 0x0901,
+  
 
   Measure_OuterLenght = 0x1800,
   Measure_Save,
@@ -83,6 +73,7 @@ int keycode_instruction = 0;
 float section_outer_lenght_val = 0;
 const int section_outer_lenght_addr = 0X0400;
 int section_outer_lenght_inst = 0;
+
 //will be sent to screen
 float section_width_val = 0;
 const int section_width_addr = 0x0500;

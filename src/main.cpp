@@ -64,10 +64,13 @@ SoftwareSerial Serial2(D0, D1); //Rx,Tx
 #define SS 15
 #endif
 
-#define section_list_colums 2
-#define sections_list_rows 3 //table rows in scren to display sections related to every companty and to choose on
-#define section_list_pages 3
+#define dispCateg_colums 2
+#define dispCateg_rows 5 
+#define dispCateg_pages 3
+#define dispCateg_startAddress 0x1500
 
+#define dispCateg_secNameLenght 12
+#define dispCateg_sillNameLenght 1
 
 #define cutting_ist_rows 3
 
@@ -109,6 +112,7 @@ void DGUS_Beep(byte bTime);
 void DGUS_Go_to_Picture(byte picID);
 void DGUS_SendVal(int Address, int Value);
 void DGUS_SendSrting(int Address, String text);
+void fill_dispCateg_table(void);
 void display_Section_list(int start_page, int Start_addr);
 
 typedef enum {
@@ -128,7 +132,7 @@ typedef enum {
 //global varibals needed
 int current_page = display_categ ;
 bool lang_eng = 1;//1 english, 0 arabic
-int mode = Deduction;
+int machine_mode = Deduction;
 
 bool material_alu = 1;//1 aluminum , 0 UPVC
 bool sectionType_hinged = 1; //1 hinged , 0 sliding
@@ -141,28 +145,22 @@ void pass_company_no (String company);
 void fill_disp_categ_table();
 
 void change_lang(void){if (lang_eng)lang_eng = 0;else lang_eng=1;}
-void mode_deduc(void) { mode=Deduction; }
-void mode_direct(void) { mode=DirectCut; }
-void mode_wireless(void) { mode=WirelessControl; }
+void mode_deduc(void) { machine_mode=Deduction; }
+void mode_direct(void) { machine_mode=DirectCut; }
+void mode_wireless(void) { machine_mode=WirelessControl; }
 
 void material_Alum_fn (void) {material_alu = 1;}
 void material_UPVC_fn (void){material_alu =0;} 
+
 void sectionType_Hinged_fn (void){sectionType_hinged =1;}
 void sectionType_Sliding_fn(void){sectionType_hinged=0;} 
 
-void  AlumCompanies_1_fn (void) { pass_company_no("01"); }
-void  AlumCompanies_2_fn (void) { pass_company_no("02"); }
-void  AlumCompanies_3_fn (void) { pass_company_no("03"); }
-void  AlumCompanies_4_fn (void) { pass_company_no("04"); }
-void  AlumCompanies_5_fn (void) { pass_company_no("05"); }
-void  AlumCompanies_6_fn (void) { pass_company_no("06"); }
-
-void  UPVCCompanies_1_fn (void) { pass_company_no("01"); }
-void  UPVCCompanies_2_fn (void) { pass_company_no("02"); }
-void  UPVCCompanies_3_fn (void) { pass_company_no("03"); }
-void  UPVCCompanies_4_fn (void) { pass_company_no("04"); }
-void  UPVCCompanies_5_fn (void) { pass_company_no("05"); }
-void  UPVCCompanies_6_fn (void) { pass_company_no("06"); }
+void  CompanyList_1_fn (void) { pass_company_no("01"); }
+void  CompanyList_2_fn (void) { pass_company_no("02"); }
+void  CompanyList_3_fn (void) { pass_company_no("03"); }
+void  CompanyList_4_fn (void) { pass_company_no("04"); }
+void  CompanyList_5_fn (void) { pass_company_no("05"); }
+void  CompanyList_6_fn (void) { pass_company_no("06"); }
 
 //defining each command function
 Screen Screen_codes[] =
@@ -180,21 +178,14 @@ Screen Screen_codes[] =
         {sectionType_Hinged,sectionType_Hinged_fn},
         {sectionType_Sliding,sectionType_Sliding_fn},
 
-        {AlumCompanies_1, AlumCompanies_1_fn},
-        {AlumCompanies_2, AlumCompanies_2_fn},
-        {AlumCompanies_3, AlumCompanies_3_fn},
-        {AlumCompanies_4, AlumCompanies_4_fn},
-        {AlumCompanies_5, AlumCompanies_5_fn},
-        {AlumCompanies_6, AlumCompanies_6_fn},
+        {CompanyList_1, CompanyList_1_fn},
+        {CompanyList_2, CompanyList_2_fn},
+        {CompanyList_3, CompanyList_3_fn},
+        {CompanyList_4, CompanyList_4_fn},
+        {CompanyList_5, CompanyList_5_fn},
+        {CompanyList_6, CompanyList_6_fn},
+//then display data read from sd card in section and sill table
 
-        {UPVCCompanies_1, UPVCCompanies_1_fn},
-        {UPVCCompanies_2, UPVCCompanies_2_fn},
-        {UPVCCompanies_3, UPVCCompanies_3_fn},
-        {UPVCCompanies_4, UPVCCompanies_4_fn},
-        {UPVCCompanies_5, UPVCCompanies_5_fn},
-        {UPVCCompanies_6, UPVCCompanies_6_fn},
-
-        
 };
 
 
@@ -220,15 +211,6 @@ void setup()
   Serial.println("card initialized.");
 #endif
 
-  getCompany_param("ALUMINUM", "joint", "01_test");
-  Serial.print("DATA:");
-  Serial.println(sill_number[1], DEC);
-  section_width_val = 0x003F;
-  section_inner_val = 999;
-  DGUS_SendVal(section_width_addr, 1);
-  DGUS_SendSrting(0, "mohamed");
-  //test it
-  //DGUS_SendSrting(0x0000,section_name[1]);
 }
 
 void loop()
@@ -236,9 +218,7 @@ void loop()
   //TouchScreenEvent(); //read sent packed and analysis it (keycode found go to relaed function)(changeglobal "keycode_val" var)
 }
 
-void motor_buttons(void){
-  if(digitalRead(left_pin))motor_move
-}
+
 
 void Serial_init(void)
 {
@@ -309,8 +289,8 @@ void getCompany_param(String material, String section_type, String company)
 #endif
 }
 void pass_company_no (String company){
-  if(material_alu&sectionType_hinged) getCompany_param("Aluminum","Hinged",company);
-  else if(material_alu&!sectionType_hinged)getCompany_param("Aluminum","Sliding",company);
+  if(material_alu&sectionType_hinged) getCompany_param("ALUMINUM","Hinged",company);
+  else if(material_alu&!sectionType_hinged)getCompany_param("ALUMINUM","Sliding",company);
   else if(!material_alu&sectionType_hinged)getCompany_param("UPVC","Hinged",company);
   else getCompany_param("UPVC","Sliding",company);
 
@@ -326,7 +306,6 @@ void DGUS_LED_Bright(byte bVal) //Screen backlite set 0-0x40
   Serial2.write(0x01);
   Serial2.write(bVal);
 }
-
 void DGUS_Beep(byte bTime) // Beep generate bTime*10ms
 {
   Serial2.write(_StartComm_Hbyte);
@@ -336,7 +315,6 @@ void DGUS_Beep(byte bTime) // Beep generate bTime*10ms
   Serial2.write(0x02);
   Serial2.write(bTime);
 }
-
 void DGUS_Go_to_Picture(byte picID) // Display specific picture
 {
   Serial2.write(_StartComm_Hbyte);
@@ -454,15 +432,26 @@ void TouchScreenEvent()
 #endif
   }
 }
-
-void display_Section_list(int start_page, int Start_addr)
+#if 0
+void display_Section_page(int start_page, int Start_addr)
 {
   for (int i = ((sections_list_rows * start_page) - sections_list_rows); i <= ((start_page * sections_list_rows) - 1); i++)
   {
-    //get data to display from global array
+    //get data to display from global array      
     DGUS_SendSrting(Start_addr, section_name[i]);
     DGUS_SendVal(Start_addr + 1, sill_number[i]);
-    Start_addr += 10;
+    Start_addr += section_list_secLenght;
+  }
+}
+#endif
+
+void fill_dispCateg_table(void)
+{
+  for (int row_no = 0; row_no <= categ_rows || row_no <= dispCateg_rows ; row_no++)
+  {
+    //get data to display from global array
+    DGUS_SendSrting(dispCateg_startAddress + (row_no*(dispCateg_secNameLenght + dispCateg_sillNameLenght))  , section_name[row_no]);
+    DGUS_SendVal(dispCateg_startAddress + (row_no*(2*dispCateg_secNameLenght + dispCateg_sillNameLenght)), sill_number[row_no]);
   }
 }
 
@@ -470,7 +459,6 @@ void Cutting_list_Handling()
 {
 }
 
-void fillin_list_data(char *col1_arr, char *col2_arr, int rows_no, int pages_n) {}
 
 /**
  * Errors
