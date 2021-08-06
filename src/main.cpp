@@ -41,19 +41,19 @@
 //#define ESP8266 //ESP32 or ESP8266
 
 #ifdef ESP8266
-SoftwareSerial Serial2(D0, D1); //Rx,Tx
+//D0 cannot be used
+SoftwareSerial SWSerial2(D1, D0); //Rx,Tx
 //For SD Card
-#define SCK D5  //14
 #define MISO D6 //12
 #define MOSI D7 //13
 #define SS D8   //15
+#define SCK D5  //14
 #define CS D4   //17
 #endif
 
 //buttons
-#define right_pin 9//s2
-#define left_pin 10//s3
-
+#define right_pin 9 //s2
+#define left_pin 10 //s3
 
 #ifdef ESP32
 SoftwareSerial Serial2(D0, D1); //Rx,Tx
@@ -63,14 +63,19 @@ SoftwareSerial Serial2(D0, D1); //Rx,Tx
 #define MOSI 13
 #define SS 15
 #endif
-
+//disp_Categ variables
 #define dispCateg_colums 2
-#define dispCateg_rows 5 
+#define dispCateg_rows 5
 #define dispCateg_pages 3
-#define dispCateg_startAddress 0x1500
+#define dispCateg_startDataAddress 0x1502
+
+#define dispCateg_startRowKeycode 0x1500
+#define dispCateg_startRowAddr 0x1500
 
 #define dispCateg_secNameLenght 12
 #define dispCateg_sillNameLenght 1
+
+int dispCateg_choosenRow = 0;
 
 #define cutting_ist_rows 3
 
@@ -102,7 +107,7 @@ char *clamp_div_W;
 int16_t *clamp_add_H;
 char *clamp_div_H;
 
-int categ_rows ;
+int categ_rows;
 int categ_colum;
 
 void Serial_init(void);
@@ -115,68 +120,69 @@ void DGUS_SendSrting(int Address, String text);
 void fill_dispCateg_table(void);
 void display_Section_list(int start_page, int Start_addr);
 
-typedef enum {
-Deduction,
-DirectCut,
-WirelessControl,
-}modes;
+typedef enum
+{
+  Deduction,
+  DirectCut,
+  WirelessControl,
+} modes;
 
+typedef enum
+{
+  display_categ, //output caase
+  operation,     //input case
 
-typedef enum {
-  display_categ,//output caase
-  operation,//input case
-  
-}tablePages;
-
+} tablePages;
 
 //global varibals needed
-int current_page = display_categ ;
-bool lang_eng = 1;//1 english, 0 arabic
+int current_page = display_categ;
+bool lang_eng = 1; //1 english, 0 arabic
 int machine_mode = Deduction;
 
-bool material_alu = 1;//1 aluminum , 0 UPVC
+bool material_alu = 1;       //1 aluminum , 0 UPVC
 bool sectionType_hinged = 1; //1 hinged , 0 sliding
-String company_no="";//to store company name
+String company_no = "";      //to store company name
 
 //functions declarations
 String creatfile_PATH(String material, String section_type, String company);
 void getCompany_param(String material, String section_type, String company);
-void pass_company_no (String company);
+void pass_company_no(String company);
 void fill_disp_categ_table();
 
-void change_lang(void){if (lang_eng)lang_eng = 0;else lang_eng=1;}
-void mode_deduc(void) { machine_mode=Deduction; }
-void mode_direct(void) { machine_mode=DirectCut; }
-void mode_wireless(void) { machine_mode=WirelessControl; }
+void change_langEng(void){ lang_eng = 1;}
+void change_langAr(void){lang_eng = 0;}
+void mode_deduc(void) { machine_mode = Deduction; }
+void mode_direct(void) { machine_mode = DirectCut; }
+void mode_wireless(void) { machine_mode = WirelessControl; }
 
-void material_Alum_fn (void) {material_alu = 1;}
-void material_UPVC_fn (void){material_alu =0;} 
+void material_Alum_fn(void) { material_alu = 1; }
+void material_UPVC_fn(void) { material_alu = 0; }
 
-void sectionType_Hinged_fn (void){sectionType_hinged =1;}
-void sectionType_Sliding_fn(void){sectionType_hinged=0;} 
+void sectionType_Hinged_fn(void) { sectionType_hinged = 1; }
+void sectionType_Sliding_fn(void) { sectionType_hinged = 0; }
 
-void  CompanyList_1_fn (void) { pass_company_no("01"); }
-void  CompanyList_2_fn (void) { pass_company_no("02"); }
-void  CompanyList_3_fn (void) { pass_company_no("03"); }
-void  CompanyList_4_fn (void) { pass_company_no("04"); }
-void  CompanyList_5_fn (void) { pass_company_no("05"); }
-void  CompanyList_6_fn (void) { pass_company_no("06"); }
+void CompanyList_1_fn(void) { pass_company_no("01"); }
+void CompanyList_2_fn(void) { pass_company_no("02"); }
+void CompanyList_3_fn(void) { pass_company_no("03"); }
+void CompanyList_4_fn(void) { pass_company_no("04"); }
+void CompanyList_5_fn(void) { pass_company_no("05"); }
+void CompanyList_6_fn(void) { pass_company_no("06"); }
 
 //defining each command function
 Screen Screen_codes[] =
     {
-        {lang_Eng, change_lang},
-        {lang_Arb, change_lang},
+        {lang_Eng, change_langEng},
+        {lang_Arb, change_langAr},
 
         {main_Deduction, mode_deduc},
         {main_Directcut, mode_direct},
         {main_WirelessControl, mode_wireless},
 
-        {material_Alum,material_Alum_fn},
-        {material_UPVC,material_UPVC_fn},
+        {material_Alum, material_Alum_fn},
+        {material_UPVC, material_UPVC_fn},
 
-        {sectionType_Hinged,sectionType_Hinged_fn},
-        {sectionType_Sliding,sectionType_Sliding_fn},
+        {sectionType_Hinged, sectionType_Hinged_fn},
+        {sectionType_Sliding, sectionType_Sliding_fn},
 
         {CompanyList_1, CompanyList_1_fn},
         {CompanyList_2, CompanyList_2_fn},
@@ -184,17 +190,16 @@ Screen Screen_codes[] =
         {CompanyList_4, CompanyList_4_fn},
         {CompanyList_5, CompanyList_5_fn},
         {CompanyList_6, CompanyList_6_fn},
-//then display data read from sd card in section and sill table
+        //then display data read from sd card in section and sill table
 
 };
-
 
 void setup()
 {
   Serial_init();
   SPI.pins(SCK, MISO, MOSI, SS);
-  pinMode(right_pin,INPUT_PULLUP);
-  pinMode(left_pin,INPUT_PULLUP);
+  pinMode(right_pin, INPUT_PULLUP);
+  pinMode(left_pin, INPUT_PULLUP);
 
   delay(5000);
 #ifdef Serial_Debuging
@@ -210,22 +215,19 @@ void setup()
 #ifdef Serial_Debuging
   Serial.println("card initialized.");
 #endif
-
 }
 
 void loop()
 {
-  //TouchScreenEvent(); //read sent packed and analysis it (keycode found go to relaed function)(changeglobal "keycode_val" var)
+  TouchScreenEvent(); //read sent packed and analysis it (keycode found go to relaed function)(changeglobal "keycode_val" var)
 }
-
-
 
 void Serial_init(void)
 {
 #ifdef Serial_Debuging
   Serial.begin(9600); //for serial debug
 #endif
-  Serial2.begin(115200); //esp32 serial2 pins (RX2,TX2)(16,17)
+  SWSerial2.begin(115200); //esp32 SWSerial2 pins (RX2,TX2)(16,17)
 }
 
 String creatfile_PATH(String material, String section_type, String company)
@@ -283,57 +285,61 @@ void getCompany_param(String material, String section_type, String company)
 
   categ_rows = company_file.getRowsCount();
   categ_colum = company_file.getColumnsCount();
-  
+
 #ifdef Serial_Debuging
   company_file.print();
 #endif
 }
-void pass_company_no (String company){
-  if(material_alu&sectionType_hinged) getCompany_param("ALUMINUM","Hinged",company);
-  else if(material_alu&!sectionType_hinged)getCompany_param("ALUMINUM","Sliding",company);
-  else if(!material_alu&sectionType_hinged)getCompany_param("UPVC","Hinged",company);
-  else getCompany_param("UPVC","Sliding",company);
-
+void pass_company_no(String company)
+{
+  if (material_alu & sectionType_hinged)
+    getCompany_param("ALUMINUM", "Hinged", company);
+  else if (material_alu & !sectionType_hinged)
+    getCompany_param("ALUMINUM", "Sliding", company);
+  else if (!material_alu & sectionType_hinged)
+    getCompany_param("UPVC", "Hinged", company);
+  else
+    getCompany_param("UPVC", "Sliding", company);
 }
 void DGUS_LED_Bright(byte bVal) //Screen backlite set 0-0x40
 {
   if (bVal > 0x40)
     bVal = 0x40;
-  Serial2.write(_StartComm_Hbyte);
-  Serial2.write(_StartComm_Lbyte);
-  Serial2.write(0x03);
-  Serial2.write(0x80);
-  Serial2.write(0x01);
-  Serial2.write(bVal);
+  SWSerial2.write(_StartComm_Hbyte);
+  SWSerial2.write(_StartComm_Lbyte);
+  SWSerial2.write(0x03);
+  SWSerial2.write(0x80);
+  SWSerial2.write(0x01);
+  SWSerial2.write(bVal);
 }
 void DGUS_Beep(byte bTime) // Beep generate bTime*10ms
 {
-  Serial2.write(_StartComm_Hbyte);
-  Serial2.write(_StartComm_Lbyte);
-  Serial2.write(0x03);
-  Serial2.write(0x80);
-  Serial2.write(0x02);
-  Serial2.write(bTime);
+  SWSerial2.write(_StartComm_Hbyte);
+  SWSerial2.write(_StartComm_Lbyte);
+  SWSerial2.write(0x03);
+  SWSerial2.write(0x80);
+  SWSerial2.write(0x02);
+  SWSerial2.write(bTime);
 }
 void DGUS_Go_to_Picture(byte picID) // Display specific picture
 {
-  Serial2.write(_StartComm_Hbyte);
-  Serial2.write(_StartComm_Lbyte);
-  Serial2.write(0x03);
-  Serial2.write(0x80); //0x80 write register,0x81 read register
-  Serial2.write(0x03);
-  Serial2.write(picID);
+  SWSerial2.write(_StartComm_Hbyte);
+  SWSerial2.write(_StartComm_Lbyte);
+  SWSerial2.write(0x03);
+  SWSerial2.write(0x80); //0x80 write register,0x81 read register
+  SWSerial2.write(0x03);
+  SWSerial2.write(picID);
 }
 
 /*
 byte picID DGUS_get_current_picID(void) // Know current picture ID 
 { 
-  Serial2.write(_StartComm_Hbyte);
-  Serial2.write(_StartComm_Lbyte);
-  Serial2.write(0x03);
-  Serial2.write(0x81);//0x80 write register,0x81 read register
-  Serial2.write(0x03);
-  Serial2.write(picID);
+  SWSerial2.write(_StartComm_Hbyte);
+  SWSerial2.write(_StartComm_Lbyte);
+  SWSerial2.write(0x03);
+  SWSerial2.write(0x81);//0x80 write register,0x81 read register
+  SWSerial2.write(0x03);
+  SWSerial2.write(picID);
 }
 */
 
@@ -347,14 +353,14 @@ void DGUS_SendVal(int Address, int Value) //Send Value for VP= Address to DGUS
   bValL = (int)Value & 0xFF;
   bValH = ((int)Value >> 8) & 0xFF;
 
-  Serial2.write(_StartComm_Hbyte);
-  Serial2.write(_StartComm_Lbyte);
-  Serial2.write(0x05); //number of next bytes
-  Serial2.write(0x82); //write command
-  Serial2.write(bAdrH);
-  Serial2.write(bAdrL);
-  Serial2.write(bValH);
-  Serial2.write(bValL);
+  SWSerial2.write(_StartComm_Hbyte);
+  SWSerial2.write(_StartComm_Lbyte);
+  SWSerial2.write(0x05); //number of next bytes
+  SWSerial2.write(0x82); //write command
+  SWSerial2.write(bAdrH);
+  SWSerial2.write(bAdrL);
+  SWSerial2.write(bValH);
+  SWSerial2.write(bValL);
 }
 
 void DGUS_SendSrting(int Address, String text)
@@ -362,44 +368,53 @@ void DGUS_SendSrting(int Address, String text)
   byte bAdrL, bAdrH;
   bAdrL = Address & 0xFF;
   bAdrH = (Address >> 8) & 0xFF;
-  Serial2.write(_StartComm_Hbyte);
-  Serial2.write(_StartComm_Lbyte);
-  Serial2.write(((byte)text.length() & 0xFF)); //number of next bytes
-  Serial2.write(0x82);                         //write command
-  Serial2.write(bAdrH);
-  Serial2.write(bAdrL);
-  Serial2.print(text);
+  SWSerial2.write(_StartComm_Hbyte);
+  SWSerial2.write(_StartComm_Lbyte);
+  SWSerial2.write(((byte)text.length() & 0xFF)); //number of next bytes
+  SWSerial2.write(0x82);                         //write command
+  SWSerial2.write(bAdrH);
+  SWSerial2.write(bAdrL);
+  SWSerial2.print(text);
 }
 
 void TouchScreenEvent()
 {
   int iLenght;
-  byte iCmd = 0, iData[255];
-  int iAdr = 0, iVal = 0;
-  if (Serial2.available() > 3)
+  int hLenght = 0;
+  byte iCmd = 0, iData[255]; //store cmd and vp and other data
+  int iAddr = 0, rAddr = 0;  //ram address
+  int nVal;                  //no. of values of sequentional addresess was snet by screen
+  int iVal = 0;
+  if (SWSerial2.available() > 3) //3 byte
   {
     Serial.println("start");
-    if (Serial2.read() == _StartComm_Hbyte)
-      if (Serial2.read() == _StartComm_Lbyte)
+    if (SWSerial2.read() == _StartComm_Hbyte)
+      if (SWSerial2.read() == _StartComm_Lbyte)
       {
-        iLenght = Serial2.read();
-
-        while (Serial2.available() < iLenght)
-          ;               //Wait for all frame !!!! Blocking procedure
-        while (iLenght--) //Compile all frame
+        iLenght = SWSerial2.read();
+        while (SWSerial2.available() < iLenght)
+          ;                       //Wait for all frame !!!! Blocking procedure
+        while (hLenght < iLenght) //Compile all frame
         {
-          iData[iLenght] = Serial2.read();
+          iData[hLenght] = SWSerial2.read();
+          Serial.print(iData[hLenght], HEX);
+          hLenght++;
         }
         iCmd = iData[0];
-        iAdr = (iData[1] << 8) + iData[2];
         switch (iCmd)
         {
-        case 0x83:
-          if (iAdr == Keycode_address)
+        case 0x83: //read from touch screen or screen send values
+          rAddr = (iData[1] << 8) + iData[2];
+          nVal = iData[3];
+          iVal = (iData[4] << 8) + iData[5];
+          switch (rAddr)
           {
-            iVal = (iData[3] << 8) + iData[4];
+          case Keycode_address:
             keycode_value = iVal;
-            for (checkAllKeyCodes) //call the function of returned keycode
+            //checkAllKeyCodes
+            for (int key = 0;
+                 key <= enums_max_counter;
+                 key++) //call the function of returned keycode
             {
               if (keycode_value == Screen_codes[key].ActionName)
               {
@@ -407,28 +422,44 @@ void TouchScreenEvent()
                 return;
               }
             }
-          }
-          else if (iAdr == section_outer_lenght_addr)
-          {
+            break;
+          case section_outer_lenght_addr:
             iVal = (iData[3] << 8) + iData[4];
             section_outer_lenght_val = iVal;
 #ifdef Serial_Debuging
-            Serial.println(section_outer_lenght_val, DEC); //for serial debug
+            if (section_outer_lenght_val > 0)
+              Serial.println(section_outer_lenght_val, DEC); //for serial debug
 #endif
+            break;
+          case dispCateg_startRowAddr:
+            iVal = (iData[3] << 8) + iData[4];
+            section_outer_lenght_val = iVal;
+#ifdef Serial_Debuging
+            if (section_outer_lenght_val > 0)
+              Serial.println(section_outer_lenght_val, DEC); //for serial debug
+#endif
+            break;
+          default:
+            break;
           }
-          break;
 
+          break;
+        case 0x82:
+          break;
         default:
           break;
         }
       }
 #ifdef Serial_Debuging
+    Serial.println("");
     Serial.print("CMD:");
     Serial.println(iCmd);
     Serial.print("VP:");
-    Serial.println(iAdr);
+    Serial.println(rAddr);
     Serial.print("Value:");
     Serial.println(iVal, DEC);
+    Serial.print("LAnguage");
+    Serial.println(lang_eng);
 #endif
   }
 }
@@ -447,18 +478,22 @@ void display_Section_page(int start_page, int Start_addr)
 
 void fill_dispCateg_table(void)
 {
-  for (int row_no = 0; row_no <= categ_rows || row_no <= dispCateg_rows ; row_no++)
+  for (int row_no = 0; row_no <= categ_rows || row_no <= dispCateg_rows; row_no++)
   {
     //get data to display from global array
-    DGUS_SendSrting(dispCateg_startAddress + (row_no*(dispCateg_secNameLenght + dispCateg_sillNameLenght))  , section_name[row_no]);
-    DGUS_SendVal(dispCateg_startAddress + (row_no*(2*dispCateg_secNameLenght + dispCateg_sillNameLenght)), sill_number[row_no]);
+    DGUS_SendSrting(dispCateg_startDataAddress + (row_no * (dispCateg_secNameLenght + dispCateg_sillNameLenght)), section_name[row_no]);
+    DGUS_SendVal(dispCateg_startDataAddress + (row_no * (2 * dispCateg_secNameLenght + dispCateg_sillNameLenght)), sill_number[row_no]);
   }
+}
+void get_dispCateg_choosenRow(int hexKeycode)
+{
+  //we write any key code as two byte high byte indicate page number and low byte instruction set no.
+  dispCateg_choosenRow = hexKeycode << 8;
 }
 
 void Cutting_list_Handling()
 {
 }
-
 
 /**
  * Errors

@@ -15,12 +15,12 @@
 //#include <mySD.h>
 #include <SPI.h>
 #include <CSV_Parser.h>
-
+/*
 #define checkAllKeyCodes    \
   int key = 0;              \
   key <= enums_max_counter; \
   key++ //for forloop to avoid long writing in fo loop
-
+*/
 typedef enum
 {
   //pagename_keycode action == keycode (page position + instruction no.)
@@ -49,8 +49,7 @@ typedef enum
   DispCateg_chooseRow = 0x0901,
   
 
-  Measure_OuterLenght = 0x1800,
-  Measure_Save,
+  Measure_SaveOuterLenght = 0x1801,
 
   enums_max_counter //used to stop iteration
 
@@ -66,12 +65,12 @@ typedef struct
 
 
 int keycode_value = 0;
-const int Keycode_address = 0X0200;
+const int Keycode_address = 0X0100;
 int keycode_instruction = 0;
 
 //data may be outerlenght or W,L array of "operation list"
 float section_outer_lenght_val = 0;
-const int section_outer_lenght_addr = 0X0400;
+const int section_outer_lenght_addr = 0X1800;
 int section_outer_lenght_inst = 0;
 
 //will be sent to screen
