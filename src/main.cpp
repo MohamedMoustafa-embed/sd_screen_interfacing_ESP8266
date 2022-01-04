@@ -160,7 +160,7 @@ void material_UPVC_fn(void) { material_alu = 0; }
 
 void sectionType_Hinged_fn(void) { sectionType_hinged = 1; }
 void sectionType_Sliding_fn(void) { sectionType_hinged = 0; }
-
+/**need more optmization take care in future*/
 void CompanyList_1_fn(void) { pass_company_no("01"); }
 void CompanyList_2_fn(void) { pass_company_no("02"); }
 void CompanyList_3_fn(void) { pass_company_no("03"); }
